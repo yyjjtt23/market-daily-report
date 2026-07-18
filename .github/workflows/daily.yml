@@ -1,0 +1,28 @@
+name: Daily Market Report
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 每天北京时间下午4点（UTC 8点）
+  workflow_dispatch:      # 允许手动触发
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run script
+        run: python daily_report.py
+      - name: Commit and push report
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add report_*.md
+          git commit -m "Add daily report" || echo "No changes to commit"
+          git push
