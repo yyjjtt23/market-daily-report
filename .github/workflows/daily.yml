@@ -5,20 +5,32 @@ on:
     - cron: '0 8 * * *'   # 每天北京时间下午4点（UTC 8点）
   workflow_dispatch:      # 允许手动触发
 
+# 关键修改：明确授予写入仓库内容的权限
+permissions:
+  contents: write
+
 jobs:
   generate-report:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # 关键修改：使用 GITHUB_TOKEN 进行身份验证，并保留凭据
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
       - name: Run script
         run: python daily_report.py
+
       - name: Commit and push report
         run: |
           git config user.name github-actions
